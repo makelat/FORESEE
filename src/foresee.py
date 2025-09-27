@@ -446,6 +446,25 @@ class Utility():
             return list_t,list_p,list_w
 
 
+    def pid_replacer(self,brstr,pids0toN):
+        """
+        Replace substrings of the form "'pid0'","'pid1'",... by the numbers
+        given in the list pids0toN, surrounded by single quotes. This helps
+        with formatting branching ratios given as strings
+        
+        Parameters
+        ----------
+        brstr: string
+            The branching ratio expression to be modified
+        pids0toN: [int]
+            List of integers corresponding to the PDG IDs of particles in the br
+        Returns
+        -------
+            The br with each "'pidn'" replaced by "'"+str(pids0toN[n])+"'"
+        """
+        for n,pidN in enumerate(pids0toN):
+            brstr = brstr.replace("'pid"+str(n)+"'","'"+str(pidN)+"'")
+        return brstr
 
 
 ##############################################
@@ -726,7 +745,7 @@ class Model(Utility):
     ###############################
     #  Production
     ###############################
-
+    
     def add_production_2bodydecay(self, pid0, pid1, br, generator, energy, nsample_had=1, nsample=1, label=None, massrange=None, scaling=2, preselectioncut=None):
         """
         Introduce a 2-body decay production mode, from a SM initial state to a SM+exotic final state
@@ -766,9 +785,9 @@ class Model(Utility):
         """
         if label is None: label=pid0
         if type(generator)==str: generator=[generator]
-        if type(br       )==str: br=br.replace("'pid0'","'"+str(pid0)+"'").replace("'pid1'","'"+str(pid1)+"'")
+        if type(br       )==str: br=self.pid_replacer(br,[pid0,pid1])
+        if type(br       )==list: br=[self.pid_replacer(bri,[pid0,pid1]) for bri in br]
         self.production[label]= {"type": "2body", "pid0": pid0, "pid1": pid1, "pid2": None, "br": br, "production": generator, "energy": energy, "nsample_had": nsample_had, "nsample": nsample, "massrange": massrange, "scaling": scaling, "preselectioncut": preselectioncut, "integration": None}
-
 
     def add_production_3bodydecay(self, pid0, pid1, pid2, br, generator, energy, nsample_had=1, nsample=1, label=None, massrange=None, scaling=2, preselectioncut=None, integration="dq2dcosth"):
         """
@@ -811,7 +830,8 @@ class Model(Utility):
         """
         if label is None: label=pid0
         if type(generator)==str: generator=[generator]
-        if type(br       )==str: br=br.replace("'pid0'","'"+str(pid0)+"'").replace("'pid1'","'"+str(pid1)+"'").replace("'pid2'","'"+str(pid2)+"'")
+        if type(br       )==str: br=self.pid_replacer(br,[pid0,pid1,pid2])
+        if type(br       )==list: br=[self.pid_replacer(bri,[pid0,pid1,pid2]) for bri in br]
         self.production[label]= {"type": "3body", "pid0": pid0, "pid1": pid1, "pid2": pid2, "br": br, "production": generator, "energy": energy, "nsample_had": nsample_had, "nsample": nsample, "massrange": massrange, "scaling": scaling, "preselectioncut": preselectioncut, "integration": integration}
 
     def add_production_mixing(self, pid, mixing, generator, energy, label=None, massrange=None, scaling=2):
@@ -1702,11 +1722,11 @@ class Foresee(Utility, Decay):
             # selected channels only
             if key not in channels: continue
             if self.model.production[key]["type"] in ["2body", "3body"]:
-                momenta, weights = self.get_spectrum_decays(mass,coupling,key)
+                momenta, weights = self.get_spectrum_decays(mass=mass,coupling=coupling,key=key)
             if self.model.production[key]["type"]=="mixing":
-                momenta, weights = self.get_spectrum_mixing(mass,coupling,key)
+                momenta, weights = self.get_spectrum_mixing(mass=mass,coupling=coupling,key=key)
             if self.model.production[key]["type"]=="direct":
-                momenta, weights = self.get_spectrum_direct(mass,coupling,key)
+                momenta, weights = self.get_spectrum_direct(mass=mass,coupling=coupling,key=key)
 
             #return statistcs
             if save_file==True and len(momenta)>0:
@@ -1867,8 +1887,8 @@ class Foresee(Utility, Decay):
             if key not in extend_to_low_pt_scales: extend_to_low_pt_scales[key] = None
         nprods = max([len(modes[key]) for key in modes.keys()])
         for key in modes.keys(): modes[key] += [modes[key][0]] * (nprods - len(modes[key]))
-
-        #setup ctau, branchinf fractions
+        
+        #setup ctau, branching fractions
         ctaus = np.array([model.get_ctau(mass, coupling) for coupling in couplings])
         if self.channels is None: brs = np.array([1 for coupling in couplings])
         else: brs = np.array([sum([model.get_br(channel, mass, coupling) for channel in self.channels]) for coupling in couplings])
@@ -1890,7 +1910,7 @@ class Foresee(Utility, Decay):
                     extend_to_low_pt_scale=extend_to_low_pt_scales[key])
             except:
                 continue
-                
+            
             # get coupling factors
             cfacs = np.array([model.get_production_scaling(key, mass, coupling, coup_ref) for coupling in couplings])
 
@@ -1987,8 +2007,8 @@ class Foresee(Utility, Decay):
                     extend_to_low_pt_scale=extend_to_low_pt_scales[key])
             except:
                 continue
-                
-            #setup coupling-factors
+            
+            # setup coupling-factors
             cfacs = np.array([model.get_production_scaling(key, mass, coupling, coup_ref) for coupling in couplings])
 
             # filter events that pass selection
@@ -2257,7 +2277,8 @@ class Foresee(Utility, Decay):
                 pids, mode = self.rng.choices(channels[0], weights=channels[1], k=1)[0]
                 if (self.channels is None) or (mode in self.channels): break
             # position
-            thetax, thetay = momentum.px/momentum.pz, momentum.py/momentum.pz
+            try: thetax, thetay = momentum.px/momentum.pz, momentum.py/momentum.pz
+            except ZeroDivisionError: continue
             posz = self.rng.uniform(0,self.length)
             posx = thetax*self.distance
             posy = thetay*self.distance
