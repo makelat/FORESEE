@@ -1322,10 +1322,15 @@ class Foresee(Utility, Decay):
                     # loop over channels
                     total = 0
                     for channel in channels:
-                        filename = dirname+energy+"TeV_"+channel+"_"+generator+"_m_"+str(mass)+".npy"
+                       
+                        filename = dirname+energy+"TeV_"+"m_"+str(mass)+".txt.gz"
+                        key_llp  = f"{channel}({generator})"
+                       
                         try:
-                            data = np.load(filename)
-                            for logth, logp, w in data.T:
+                            data = self.read_list_angle_momenta_weights(filename, keys = [key_llp])
+                         
+                            for i in range(len(data[0])):
+                                logth, logp, w = data[0][i],data[1][i],data[2][i][0]
                                 if eval(condition): total+=w
                         except:
                             continue
