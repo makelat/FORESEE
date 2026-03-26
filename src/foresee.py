@@ -1849,6 +1849,7 @@ class Foresee(Utility, Decay):
         dbart = ctau * momentum.pt / momentum.m
 
         # probability to decay in beampipe
+        # TODO: Here the LHC values are hardcoded. Should probably be defined in set_detector()
         if str(pid) in ["130", "310"]:
             ltan, ltas, rpipe = 140., 20., 0.05
             if (theta < 0.017/ltas): probability = 1.- np.exp(- ltan/dbarz)
