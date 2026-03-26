@@ -1064,6 +1064,7 @@ class Foresee(Utility, Decay):
 
         # extract line
         cs = plt.contour (m,c,n, levels=[np.log10(nevents)])
+        #FIXME ContourSet definition changed in matplotlib ver 3.8
         p = cs.collections[0].get_paths()[icontour]
         v = p.vertices
         xvals, yvals = v[:,0], v[:,1]
