@@ -306,7 +306,7 @@ class Foresee(Utility, Decay):
             momenta_llp0, weights_llp0 = self.read_list_4momenta_weights(filename0, configuration,mass=mass0,nocuts=True)
             momenta_llp1, weights_llp1 = self.read_list_4momenta_weights(filename1, configuration, mass=mass1,nocuts=True)
         except:
-            print ("did not find file:", filenames0, "or", filenames1)
+            print ("did not find file:", filename0, "or", filename1)
             return [], []
 
         # z-axis angles and 3-momentum magnitudes from momenta
