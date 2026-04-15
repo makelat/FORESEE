@@ -1378,9 +1378,10 @@ class Foresee(Utility, Decay):
         -------
             Pyplot object
         """
-        dirname = self.dirpath + "files/hadrons/"+energy+"TeV/"+generator+"/"
-        filename = dirname+generator+"_"+energy+"TeV.txt.gz"
-        keys = [f"{pid}({generator})"]
+        gens = generator
+        if type(generator)==str: gens=[generator]
+        filename = self.dirpath + "files/hadrons/"+energy+"TeV.txt.gz"
+        keys = [f"{pid}({gen})" for gen in gens]
         p,w = self.read_list_4momenta_weights(filename, keys,mass=self.masses(pid))
         plt,_,_,_ =self.convert_to_hist_list(p,w[:,0], do_plot=True, prange=prange)
         return plt
