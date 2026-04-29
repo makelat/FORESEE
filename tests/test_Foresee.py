@@ -92,9 +92,9 @@ def test_read_list_momenta_weights_2():
 def test_read_list_momenta_weights_3():
     """
     Check the sum of xs values for various charm hadrons using NLO-P8 &
-    DPMJET & Pythia8 & Pythia8-Forward at 13.6 TeV
+    DPMJET & Pythia8-Monash & Pythia8-Forward at 13.6 TeV
     """
-    
+
     #Expected values for the sum of flattened list_xs
     ref = {
         'NLO-P8_13.6_411': 1465801300.7249959,
@@ -106,16 +106,16 @@ def test_read_list_momenta_weights_3():
         'SIBYLL_13.6_411': 1526990065.6999984,
         'SIBYLL_13.6_-421': 3330583308.1999803,
         'SIBYLL_13.6_4122': 610248228.1000023,
-        'Pythia8_13.6_411': 1763738803.700007,
-        'Pythia8_13.6_-421': 3428131619.5999875,
-        'Pythia8_13.6_4122': 249262647.19999886,
+        'Pythia8-Monash_13.6_411': 1763738803.700007,
+        'Pythia8-Monash_13.6_-421': 3428131619.5999875,
+        'Pythia8-Monash_13.6_4122': 249262647.19999886,
         'Pythia8-Forward_13.6_411': 1393189207.0,
         'Pythia8-Forward_13.6_-421': 2696044660.0,
         'Pythia8-Forward_13.6_4122': 1477589385.0
     }
-    
+
     for energy in ["13.6"]:
-        for generator in ["NLO-P8","DPMJET","SIBYLL","Pythia8","Pythia8-Forward"]:
+        for generator in ["NLO-P8","DPMJET","SIBYLL","Pythia8-Monash","Pythia8-Forward"]:
             for pid in ["411","-421", "4122"]:
                 
                 #Open file, fetch list of xs
