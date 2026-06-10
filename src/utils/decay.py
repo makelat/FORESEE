@@ -383,11 +383,10 @@ class Decay():
         #TODO replace below w/ above, more efficient but generation order differs
         q2,costh,phi,energy=[],[],[],[]
         for _ in range(nsample):
-            #FIXME should use self.rng.uniform instead of random.uniform --> agree
-            q2.append(random.uniform(q2min,q2max))
-            costh.append(random.uniform(-1,1))
-            phi.append(random.uniform(-math.pi,math.pi))
-            energy.append(random.uniform(0.,1.))  #Translated to ENmin, ENmax interval below
+            q2.append(self.rng.uniform(q2min,q2max))
+            costh.append(self.rng.uniform(-1,1))
+            phi.append(self.rng.uniform(-math.pi,math.pi))
+            energy.append(self.rng.uniform(0.,1.))  #Translated to ENmin, ENmax interval below
         #Ensure np.array format
         q2 = np.array(q2)
         costh = np.array(costh)
@@ -465,9 +464,9 @@ class Decay():
         #TODO replace below w/ above
         energy,phi,costh = [],[],[]
         for i in range(nsample):
-            energy.append(random.uniform(emin,emax))
-            phi.append(random.uniform(-math.pi,math.pi))  #FIXME self.rng.uniform
-            costh.append(random.uniform(-1,1))  #FIXME self.rng.uniform
+            energy.append(self.rng.uniform(emin,emax))
+            phi.append(self.rng.uniform(-math.pi,math.pi))
+            costh.append(self.rng.uniform(-1,1))
         #Ensure array format
         energy = np.array(energy)
         costh = np.array(costh)
@@ -530,11 +529,10 @@ class Decay():
         #TODO replace below w/ above
         cosI,phiI,cosM,phiM=[],[],[],[]
         for i in range(nsample):
-            #FIXME self.rng.random
-            cosI.append(random.uniform(-1.,1.))
-            phiI.append(random.uniform(-math.pi,math.pi))
-            cosM.append(random.uniform(-1.,1.))
-            phiM.append(random.uniform(-math.pi,math.pi))
+            cosI.append(self.rng.uniform(-1.,1.))
+            phiI.append(self.rng.uniform(-math.pi,math.pi))
+            cosM.append(self.rng.uniform(-1.,1.))
+            phiM.append(self.rng.uniform(-math.pi,math.pi))
 
         # numerical integration TODO integration? Is integral actually used anywhere?
         p_1,p_I=self.twobody_decay(p_mother, m0 ,m1, mI ,phiM, cosM)
