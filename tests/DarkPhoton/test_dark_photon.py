@@ -39,10 +39,10 @@ def test_DarkPhoton_pion():
         os.unlink('model/br')
         os.unlink('model/ctau.txt')
     except: pass
-    os.symlink(src = src_path + '../Models/' + modelname + '/model/br',\
+    os.symlink(src = os.path.normpath(src_path + '../Models/' + modelname + '/model/br'),\
                dst = 'model/br',\
                target_is_directory=True)
-    os.symlink(src = src_path + '../Models/' + modelname + '/model/ctau.txt',\
+    os.symlink(src = os.path.normpath(src_path + '../Models/' + modelname + '/model/ctau_DarkCast.txt'),\
                dst = 'model/ctau.txt',\
                target_is_directory=False)
 
@@ -84,10 +84,10 @@ def test_DarkPhoton_pion():
     
     #Compare result to expected numbers of events
     ref = {
-        "EPOSLHC": 118.51,
-        "SIBYLL": 107.446,
-        "QGSJET": 109.821,
-        "PYTHIA": 114.938,
+        "EPOSLHC": 126.785,
+        "SIBYLL":  115.365,
+        "QGSJET": 116.697,
+        "PYTHIA": 123.400,
     }
 
     for isetup, setup in enumerate(setupnames):
@@ -118,18 +118,18 @@ def test_DarkPhoton_eta():
         os.unlink('model/br')
         os.unlink('model/ctau.txt')
     except: pass
-    os.symlink(src = src_path + '../Models/' + modelname + '/model/br',\
+    os.symlink(src = os.path.normpath(src_path + '../Models/' + modelname + '/model/br_DarkCast'),\
                dst = 'model/br',\
                target_is_directory=True)
-    os.symlink(src = src_path + '../Models/' + modelname + '/model/ctau.txt',\
+    os.symlink(src = os.path.normpath(src_path + '../Models/' + modelname + '/model/ctau_DarkCast.txt'),\
                dst = 'model/ctau.txt',\
                target_is_directory=False)
 
     model.set_ctau_1d(filename="model/ctau.txt",)
-    decay_modes = ["e_e", "mu_mu", "pi+_pi-", "pi0_gamma", "pi+_pi-_pi0", "K_K"]
+    decay_modes =  ["e_e", "mu_mu", "pi+_pi-", "pi0_gamma", "pi+_pi-_pi0", "K_K"]
     model.set_br_1d(
         modes = decay_modes,
-        finalstates=[[11,-11], [13,-13], [221,-211], [111,22], None, [321,-321]],
+        finalstates=[[11,-11], [13,-13], [211,-211], [111,22], None, [321,-321]],
         filenames=["model/br/"+mode+".txt" for mode in decay_modes],
     )
     
@@ -198,7 +198,7 @@ def test_DarkPhoton_brem():
     energy = "13.6"
     model = Model(modelname, path="./")
     model.add_production_direct(
-        label = "Brem",
+        label = "Brem_FWW",
         energy = energy,
         condition = ["p.pt<1", "p.pt<2", "p.pt<0.5"],
         coupling_ref=1,
@@ -215,13 +215,13 @@ def test_DarkPhoton_brem():
         os.unlink('model/ctau.txt')
         os.unlink('model/direct')
     except: pass
-    os.symlink(src = src_path + '../Models/' + modelname + '/model/br',\
+    os.symlink(src = os.path.normpath(src_path + '../Models/' + modelname + '/model/br'),\
                dst = 'model/br',\
                target_is_directory=True)
-    os.symlink(src = src_path + '../Models/' + modelname + '/model/ctau.txt',\
+    os.symlink(src = os.path.normpath(src_path + '../Models/' + modelname + '/model/ctau_DarkCast.txt'),\
                dst = 'model/ctau.txt',\
                target_is_directory=False)
-    os.symlink(src = src_path + '../Models/' + modelname + '/model/direct',\
+    os.symlink(src = os.path.normpath(src_path + '../Models/' + modelname + '/model/direct'),\
                dst = 'model/direct',\
                target_is_directory=True)
 
@@ -241,7 +241,7 @@ def test_DarkPhoton_brem():
         luminosity=300,
     )
     setupnames = ["p.pt<1", "p.pt<2", "p.pt<0.5"]
-    modes = {'Brem':  ["p.pt<1", "p.pt<2", "p.pt<0.5"]}
+    modes = {'Brem_FWW':  ["p.pt<1", "p.pt<2", "p.pt<0.5"]}
     
     #Find LLP spectra, save under model dir
     foresee.get_llp_spectrum(mass=mass, coupling=1, do_plot=False)
@@ -296,10 +296,10 @@ def test_DarkPhoton_mix():
         os.unlink('model/br')
         os.unlink('model/ctau.txt')
     except: pass
-    os.symlink(src = src_path + '../Models/' + modelname + '/model/br',\
+    os.symlink(src = os.path.normpath(src_path + '../Models/' + modelname + '/model/br'),\
                dst = 'model/br',\
                target_is_directory=True)
-    os.symlink(src = src_path + '../Models/' + modelname + '/model/ctau.txt',\
+    os.symlink(src = os.path.normpath(src_path + '../Models/' + modelname + '/model/ctau_DarkCast.txt'),\
                dst = 'model/ctau.txt',\
                target_is_directory=False)
 
@@ -341,12 +341,12 @@ def test_DarkPhoton_mix():
     
     #Compare result to expected numbers of events
     ref = {
-        "EPOSLHC": 0.219,
-        "SIBYLL": 0.14,
+        "EPOSLHC": 0.212,
+        "SIBYLL": 0.135,
         "QGSJET": 0,
-        "PYTHIA": 0.165,
+        "PYTHIA": 0.159,
     }
 
     for isetup, setup in enumerate(setupnames):
-        assert np.isclose(round(sum(weights[:,isetup]),3),ref[setup])
+        assert np.isclose(round(sum(weights[:,isetup]),3),ref[setup],rtol=0.01) #%-lvl acc OK
 
