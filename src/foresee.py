@@ -301,13 +301,17 @@ class Foresee(Utility, Decay):
             if xmass> mass and xmass<mass1: mass1=xmass
 
         #load benchmark data
-        filename0 = self.model.modelpath+"model/direct/"+energy+"TeV/"+energy+"TeV_"+str(mass0)+".txt.gz"
-        filename1 = self.model.modelpath+"model/direct/"+energy+"TeV/"+energy+"TeV_"+str(mass1)+".txt.gz"
+        suffix=".txt.gz"  #Default filetype to try. Exception handling also checks for .txt
+        filename0 = self.model.modelpath+"model/direct/"+energy+"TeV/"+energy+"TeV_"+str(mass0)+suffix
+        filename1 = self.model.modelpath+"model/direct/"+energy+"TeV/"+energy+"TeV_"+str(mass1)+suffix
         try:
             momenta_llp0, weights_llp0 = self.read_list_4momenta_weights(filename0, configuration,mass=mass0,nocuts=True)
-            momenta_llp1, weights_llp1 = self.read_list_4momenta_weights(filename1, configuration, mass=mass1,nocuts=True)
-        except:
+            momenta_llp1, weights_llp1 = self.read_list_4momenta_weights(filename1, configuration,mass=mass1,nocuts=True)
+        except FileNotFoundError:
             print ("did not find file:", filename0, "or", filename1)
+            return [], []
+        except:
+            print ("error in foresee.get_spectrum_direct")
             return [], []
 
         # z-axis angles and 3-momentum magnitudes from momenta
