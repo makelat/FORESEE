@@ -10,7 +10,7 @@ from .utils.model import Model
 from .utils.decay import Decay
 from matplotlib import gridspec
 from numba import jit
-            
+
 
 ##############################################
 ##############################################
@@ -76,6 +76,7 @@ class Foresee(Utility, Decay):
         dbart = ctau * momentum.pt / momentum.m
 
         # probability to decay in beampipe
+        # TODO: Here the LHC values are hardcoded. Should probably be defined in set_detector()
         if str(pid) in ["130", "310"]:
             ltan, ltas, rpipe = 140., 20., 0.05
             if (theta < 0.017/ltas): probability = 1.- np.exp(- ltan/dbarz)
@@ -256,7 +257,7 @@ class Foresee(Utility, Decay):
 
         # z-axis angles and 3-momentum magnitudes from momenta
         momenta_lab = theta_p3_f_arr(momenta=momenta_mother)
-            
+
         # weights
         if type(mixing)==str:
             mixing_angle = eval(mixing)
@@ -300,18 +301,22 @@ class Foresee(Utility, Decay):
             if xmass> mass and xmass<mass1: mass1=xmass
 
         #load benchmark data
-        filename0 = self.model.modelpath+"model/direct/"+energy+"TeV/"+energy+"TeV_"+str(mass0)+".txt.gz"
-        filename1 = self.model.modelpath+"model/direct/"+energy+"TeV/"+energy+"TeV_"+str(mass1)+".txt.gz"
+        suffix=".txt.gz"  #Default filetype to try. Exception handling also checks for .txt
+        filename0 = self.model.modelpath+"model/direct/"+energy+"TeV/"+energy+"TeV_"+str(mass0)+suffix
+        filename1 = self.model.modelpath+"model/direct/"+energy+"TeV/"+energy+"TeV_"+str(mass1)+suffix
         try:
             momenta_llp0, weights_llp0 = self.read_list_4momenta_weights(filename0, configuration,mass=mass0,nocuts=True)
-            momenta_llp1, weights_llp1 = self.read_list_4momenta_weights(filename1, configuration, mass=mass1,nocuts=True)
-        except:
+            momenta_llp1, weights_llp1 = self.read_list_4momenta_weights(filename1, configuration,mass=mass1,nocuts=True)
+        except FileNotFoundError:
             print ("did not find file:", filename0, "or", filename1)
+            return [], []
+        except:
+            print ("error in foresee.get_spectrum_direct")
             return [], []
 
         # z-axis angles and 3-momentum magnitudes from momenta
-        momenta_lab = theta_p3_f_arr(momenta=momenta_llp0)                
-        
+        momenta_lab = theta_p3_f_arr(momenta=momenta_llp0)
+
         # weights
         if len(condition)>1:
             factors = np.array([[0 if (c is not None) and (eval(c)==0) else 1 if c is None else eval(c) for p in momenta_llp0] for c in condition]).T
@@ -352,9 +357,9 @@ class Foresee(Utility, Decay):
         momenta_all, weights_all = np.array([[0.1,0.1]]), [0 ]
         dirname = self.model.modelpath+"model/LLP_spectra/"
         if not os.path.exists(dirname): os.mkdir(dirname)
-        
+
         list_w, keys_llp, energy = [], [], 0
-        
+
         # loop over channels
         for key in self.model.production.keys():
 
@@ -385,7 +390,7 @@ class Foresee(Utility, Decay):
             logth, logp = data[0], data[1]
             filename = dirname+energy+"TeV_"+"m_"+str(mass)+".txt.gz"
             self.write_list_angle_momenta_weights(logth, logp, list_w, keys_llp, filename)
-        
+
         #return
         if do_plot:
             return self.convert_to_hist_list(momenta_all, weights_all, do_plot=do_plot)[0]
@@ -455,7 +460,7 @@ class Foresee(Utility, Decay):
         self.ermin=ermin
         self.ermax=ermax
         self.efficiency=efficiency
-        
+
         # for MCPs only
         self.photon_yield=photon_yield
         self.n_layer=n_layer
@@ -545,7 +550,7 @@ class Foresee(Utility, Decay):
         ctaus = np.array([model.get_ctau(mass, coupling) for coupling in couplings])
         if self.channels is None: brs = np.array([1 for coupling in couplings])
         else: brs = np.array([sum([model.get_br(channel, mass, coupling) for channel in self.channels]) for coupling in couplings])
-        
+
         # setup output arrays
         output_p, output_w = [LorentzVector(0,0,0,0)], [np.array([[0 for _ in range(nprods)] for _ in couplings])]
 
@@ -680,7 +685,7 @@ class Foresee(Utility, Decay):
                 prob_int = self.length / lamdaint
                 wgts = np.outer(cfacs * prob_int, w)
                 output_w.append(wgts)
-                
+
             #TODO reconsider output format? Use skheparray for new skhep?
             output_p += [LorentzVector(p[0],p[1],p[2],p[3]) for p in momenta]
 
@@ -720,7 +725,7 @@ class Foresee(Utility, Decay):
         -------
             List of couplings, number of nsignals as numpy array, stat momenta, stat weights as numpy array
         """
-        
+
         # setup different couplings to scan over
         model = self.model
         if modes is None: modes = {key: model.production[key]["production"] for key in model.production.keys()}
@@ -743,7 +748,7 @@ class Foresee(Utility, Decay):
                     filename=filename, keys=keys_llp, mass=mass, nsample=nsample, preselectioncut=preselectioncuts)
             except:
                 continue
-                
+
             #setup coupling-factors
             cfacs = np.array([model.get_production_scaling(key, mass, coupling, coup_ref) for coupling in couplings])
 
@@ -760,7 +765,7 @@ class Foresee(Utility, Decay):
 
             #factor
             factor = self.density_layer * self.efficiency_layer * self.photon_yield * self.length_layer
-            
+
             # loop over particles, and record probablity to interact in volume
             for p,w in zip(momenta, weights):
                 dEdxs = model.get_dEdx(mass, couplings, p[3])
@@ -772,7 +777,7 @@ class Foresee(Utility, Decay):
             output_p += [LorentzVector(p[0],p[1],p[2],p[3]) for p in momenta]
 
         return couplings, sum(output_w), output_p, np.transpose(np.array(output_w), (1, 0, 2))
-        
+
     ###############################
     #  Export Results as HEPMC File
     ###############################
@@ -1323,13 +1328,13 @@ class Foresee(Utility, Decay):
                     # loop over channels
                     total = 0
                     for channel in channels:
-                       
+
                         filename = dirname+energy+"TeV_"+"m_"+str(mass)+".txt.gz"
                         key_llp  = f"{channel}({generator})"
-                       
+
                         try:
                             data = self.read_list_angle_momenta_weights(filename, keys = [key_llp])
-                         
+
                             for i in range(len(data[0])):
                                 logth, logp, w = data[0][i],data[1][i],data[2][i][0]
                                 if eval(condition): total+=w
@@ -1378,10 +1383,8 @@ class Foresee(Utility, Decay):
         -------
             Pyplot object
         """
-        gens = generator
-        if type(generator)==str: gens=[generator]
         filename = self.dirpath + "files/hadrons/"+energy+"TeV.txt.gz"
-        keys = [f"{pid}({gen})" for gen in gens]
+        keys = [f"{pid}({generator})"]
         p,w = self.read_list_4momenta_weights(filename, keys,mass=self.masses(pid))
         plt,_,_,_ =self.convert_to_hist_list(p,w[:,0], do_plot=True, prange=prange)
         return plt

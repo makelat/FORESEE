@@ -18,7 +18,7 @@ import numpy as np
 def test_MCP_jpsi():
 
     # generators
-    generators=["Pythia8"]
+    generators=["Pythia8-Monash"]
     
     #Specify pion 2-body decay
     modelname="MCP"
@@ -75,7 +75,7 @@ def test_MCP_jpsi():
     
     #Compare result to expected numbers of events
     ref = {
-        "Pythia8": 4670.767,
+        "Pythia8-Monash": 4670.767,
     }
 
     for igen,gen in enumerate(generators):
@@ -86,7 +86,7 @@ def test_MCP_jpsi():
 def test_MCP_upsilon():
 
     # generators
-    generators=["Pythia8"]
+    generators=["Pythia8-Monash"]
     
     #Specify pion 2-body decay
     modelname="MCP"
@@ -143,7 +143,7 @@ def test_MCP_upsilon():
     
     #Compare result to expected numbers of events
     ref = {
-        "Pythia8": 2.167,
+        "Pythia8-Monash": 2.167,
     }
 
     for igen,gen in enumerate(generators):
